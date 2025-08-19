@@ -6,7 +6,9 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 
 # ---------------- PAGE SETTINGS ----------------
-st.set_page_config(page_title="AI Resume Builder", page_icon="📝", layout="centered")
+st.set_page_config(page_title="YR Digital Resume Builder", page_icon="📄", layout="centered")
+st.title("📄 YR Digital Resume Builder")
+st.write("Create your professional resume in minutes 🚀")
 
 # Styles for PDF
 styles = getSampleStyleSheet()
