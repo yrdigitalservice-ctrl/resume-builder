@@ -14,7 +14,7 @@ st.write("Create your professional resume in minutes 🚀")
 styles = getSampleStyleSheet()
 styles.add(ParagraphStyle(name="Heading", fontSize=14, leading=16, spaceAfter=10, textColor=colors.HexColor("#2E86C1"), bold=True))
 styles.add(ParagraphStyle(name="SubHeading", fontSize=12, leading=14, spaceAfter=6, textColor=colors.HexColor("#117A65"), bold=True))
-styles.add(ParagraphStyle(name="Normal", fontSize=10, leading=12, spaceAfter=6))
+
 
 # ---------------- FORM ----------------
 st.title("📝 Resume Builder (Clients can skip sections)")
