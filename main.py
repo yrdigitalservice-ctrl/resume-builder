@@ -1,96 +1,148 @@
 import streamlit as st
-from io import BytesIO
-from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
 
-# ---------------- PAGE SETTINGS ----------------
-st.set_page_config(page_title="YR Digital Resume Builder", page_icon="📄", layout="centered")
-st.title("📄 YR Digital Resume Builder")
-st.write("Create your professional resume in minutes 🚀")
+st.set_page_config(page_title="Resume Builder", layout="centered")
 
-# Styles for PDF
-styles = getSampleStyleSheet()
-styles.add(ParagraphStyle(name="Heading", fontSize=14, leading=16, spaceAfter=10, textColor=colors.HexColor("#2E86C1"), bold=True))
-styles.add(ParagraphStyle(name="SubHeading", fontSize=12, leading=14, spaceAfter=6, textColor=colors.HexColor("#117A65"), bold=True))
+st.markdown(
+    """
+    <h1 style='text-align: center; color: #FF4B4B;'>🚀 YR Digital Resume Builder</h1>
+    <p style='text-align: center; color: #FAFAFA;'>Create a professional resume in minutes</p>
+    """,
+    unsafe_allow_html=True
+)
+st.write("---")
 
-
-# ---------------- FORM ----------------
-st.title("📝 Resume Builder (Clients can skip sections)")
-
+# Form to collect user input
 with st.form("resume_form"):
-    st.subheader("👤 Basic Information")
-    name = st.text_input("Full Name *")
+    st.markdown("### 📌 Basic Information")
+    name = st.text_input("Full Name")
     email = st.text_input("Email")
     phone = st.text_input("Phone")
-    address = st.text_input("Address (Optional)")
-    summary = st.text_area("Professional Summary (1–3 lines)")
 
-    st.subheader("🧠 Skills")
-    skills = st.text_area("List your skills (comma separated)")
+    st.markdown("### 🎯 Objective (optional)")
+    objective = st.text_area("Write your career objective")
 
-    st.subheader("💼 Experience")
-    job_title = st.text_input("Job Title")
-    company = st.text_input("Company")
-    exp_years = st.text_input("Years (e.g. 2021–2023)")
-    exp_details = st.text_area("Work Details")
+    st.markdown("### 📝 Professional Summary (optional)")
+    summary = st.text_area("List key highlights (separate with commas)", placeholder="e.g. 3+ years in IT recruitment, Skilled in stakeholder management")
 
-    st.subheader("🎓 Education")
-    degree = st.text_input("Degree")
-    school = st.text_input("School / University")
-    edu_years = st.text_input("Years (e.g. 2018–2021)")
+    st.markdown("### 🧠 Skills (optional)")
+    skills = st.text_area("Enter skills separated by commas", placeholder="Python, SQL, Communication")
 
-    st.subheader("📜 Certificates (Optional)")
-    certificate = st.text_input("Certificate Name")
-    cert_year = st.text_input("Year")
+    st.markdown("### 💼 Experience (optional)")
+    exp_count = st.number_input("How many jobs do you want to add?", min_value=0, max_value=5, value=1)
+    experience = []
+    for i in range(exp_count):
+        st.markdown(f"#### Job {i+1}")
+        role = st.text_input(f"Role (Job {i+1})")
+        company = st.text_input(f"Company (Job {i+1})")
+        resp = st.text_area(f"Responsibilities (comma-separated) for Job {i+1}")
+        experience.append({
+            "role": role,
+            "company": company,
+            "responsibilities": [r.strip() for r in resp.split(",")] if resp else []
+        })
 
-    submitted = st.form_submit_button("✅ Generate Resume")
+    st.markdown("### 🎓 Education (optional)")
+    edu_count = st.number_input("How many education entries?", min_value=0, max_value=5, value=1)
+    education = []
+    for i in range(edu_count):
+        st.markdown(f"#### Education {i+1}")
+        degree = st.text_input(f"Degree (Education {i+1})")
+        inst = st.text_input(f"Institution (Education {i+1})")
+        year = st.text_input(f"Year (Education {i+1})")
+        grade = st.text_input(f"Grade/Score (Education {i+1})")
+        if degree and inst:
+            education.append([degree, inst, year, grade])
 
-# ---------------- PDF GENERATOR ----------------
-if submitted:
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=letter)
+    st.markdown("### 📜 Certificates (optional)")
+    certificates = st.text_area("Enter certificates (comma-separated)", placeholder="Google Data Analytics, AWS Certified Cloud Practitioner")
+
+    submitted = st.form_submit_button("Generate Resume")
+
+# Function to create PDF
+def create_pdf(data, filename):
+    doc = SimpleDocTemplate(filename, pagesize=A4)
+    styles = getSampleStyleSheet()
     elements = []
 
-    if name:
-        elements.append(Paragraph(name, styles["Heading"]))
-    if email or phone or address:
-        contact_info = f"{email} | {phone} | {address}"
-        elements.append(Paragraph(contact_info, styles["Normal"]))
-    elements.append(Spacer(1, 12))
+    # Header
+    header_style = ParagraphStyle("Header", fontSize=18, alignment=1, spaceAfter=12, textColor=colors.HexColor("#FF4B4B"))
+    elements.append(Paragraph(f"<b>{data['name']}</b>", header_style))
+    contact_style = ParagraphStyle("Contact", fontSize=10, alignment=1, spaceAfter=20)
+    elements.append(Paragraph(f"{data['email']} | {data['phone']}", contact_style))
 
-    if summary:
-        elements.append(Paragraph("Professional Summary", styles["SubHeading"]))
-        elements.append(Paragraph(summary, styles["Normal"]))
+    # Objective
+    if data.get("objective"):
+        elements.append(Paragraph("<b>Objective</b>", styles["Heading3"]))
+        elements.append(Paragraph(data["objective"], styles["Normal"]))
         elements.append(Spacer(1, 12))
 
-    if skills:
-        elements.append(Paragraph("Skills", styles["SubHeading"]))
-        skill_list = ", ".join([s.strip() for s in skills.split(",")])
-        elements.append(Paragraph(skill_list, styles["Normal"]))
+    # Professional Summary
+    if data.get("summary"):
+        elements.append(Paragraph("<b>Professional Summary</b>", styles["Heading3"]))
+        for line in data["summary"]:
+            elements.append(Paragraph(f"• {line}", styles["Normal"]))
         elements.append(Spacer(1, 12))
 
-    if job_title and company:
-        elements.append(Paragraph("Experience", styles["SubHeading"]))
-        elements.append(Paragraph(f"{job_title} - {company} ({exp_years})", styles["Normal"]))
-        if exp_details:
-            elements.append(Paragraph(exp_details, styles["Normal"]))
+    # Skills
+    if data.get("skills"):
+        elements.append(Paragraph("<b>Skills</b>", styles["Heading3"]))
+        elements.append(Paragraph(", ".join(data["skills"]), styles["Normal"]))
         elements.append(Spacer(1, 12))
 
-    if degree and school:
-        elements.append(Paragraph("Education", styles["SubHeading"]))
-        elements.append(Paragraph(f"{degree} - {school} ({edu_years})", styles["Normal"]))
+    # Experience
+    if data.get("experience"):
+        elements.append(Paragraph("<b>Experience</b>", styles["Heading3"]))
+        for job in data["experience"]:
+            if job["role"] and job["company"]:
+                elements.append(Paragraph(f"<b>{job['role']} – {job['company']}</b>", styles["Normal"]))
+                for resp in job["responsibilities"]:
+                    elements.append(Paragraph(f"• {resp}", styles["Normal"]))
+                elements.append(Spacer(1, 8))
         elements.append(Spacer(1, 12))
 
-    if certificate:
-        elements.append(Paragraph("Certificates", styles["SubHeading"]))
-        elements.append(Paragraph(f"{certificate} ({cert_year})", styles["Normal"]))
+    # Education
+    if data.get("education"):
+        elements.append(Paragraph("<b>Education</b>", styles["Heading3"]))
+        edu_data = [["Degree", "Institution", "Year", "Grade"]] + data["education"]
+        table = Table(edu_data, hAlign="LEFT", colWidths=[120, 200, 60, 60])
+        table.setStyle(TableStyle([
+            ("BACKGROUND", (0,0), (-1,0), colors.grey),
+            ("TEXTCOLOR", (0,0), (-1,0), colors.whitesmoke),
+            ("GRID", (0,0), (-1,-1), 0.5, colors.black),
+            ("ALIGN", (0,0), (-1,-1), "CENTER")
+        ]))
+        elements.append(table)
+        elements.append(Spacer(1, 12))
+
+    # Certificates
+    if data.get("certificates"):
+        elements.append(Paragraph("<b>Certificates</b>", styles["Heading3"]))
+        for cert in data["certificates"]:
+            elements.append(Paragraph(f"• {cert}", styles["Normal"]))
         elements.append(Spacer(1, 12))
 
     doc.build(elements)
-    pdf = buffer.getvalue()
-    buffer.close()
 
-    st.success("🎉 Resume Generated Successfully!")
-    st.download_button("📥 Download PDF", data=pdf, file_name="resume.pdf", mime="application/pdf")
+# Generate PDF
+if submitted:
+    resume_data = {
+        "name": name,
+        "email": email,
+        "phone": phone,
+        "objective": objective,
+        "summary": [s.strip() for s in summary.split(",")] if summary else [],
+        "skills": [s.strip() for s in skills.split(",")] if skills else [],
+        "experience": experience,
+        "education": education,
+        "certificates": [c.strip() for c in certificates.split(",")] if certificates else []
+    }
+
+    filename = f"{name.replace(' ', '_')}_Resume.pdf"
+    create_pdf(resume_data, filename)
+
+    with open(filename, "rb") as f:
+        st.download_button("📥 Download Your Resume", f, file_name=filename)
