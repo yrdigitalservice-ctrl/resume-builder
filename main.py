@@ -26,8 +26,7 @@ with st.form("resume_form"):
     objective = st.text_area("Write your career objective")
 
     st.markdown("### 📝 Professional Summary (optional)")
-    summary = st.text_area("List key highlights (comma-separated)",
-                           placeholder="e.g. 3+ years in IT recruitment, Skilled in stakeholder management")
+    summary = st.text_area("List key highlights (comma-separated)", placeholder="e.g. 3+ years in IT recruitment, Skilled in stakeholder management")
 
     st.markdown("### 🧠 Skills (optional)")
     skills = st.text_area("Enter skills separated by commas", placeholder="Python, SQL, Communication")
@@ -62,12 +61,10 @@ with st.form("resume_form"):
 
     # ----- CERTIFICATES -----
     st.markdown("### 📜 Certificates (optional)")
-    certificates = st.text_area("Enter certificates (comma-separated)",
-                                placeholder="Google Data Analytics, AWS Certified Cloud Practitioner")
+    certificates = st.text_area("Enter certificates (comma-separated)", placeholder="Google Data Analytics, AWS Certified Cloud Practitioner")
 
     st.markdown("### 📎 Upload Certificate Images (optional)")
-    uploaded_certs = st.file_uploader("Upload certificates (JPG/PNG)",
-                                      type=["png", "jpg", "jpeg"], accept_multiple_files=True)
+    uploaded_certs = st.file_uploader("Upload certificates (JPG/PNG)", type=["png", "jpg", "jpeg"], accept_multiple_files=True)
 
     submitted = st.form_submit_button("Generate Resume")
 
