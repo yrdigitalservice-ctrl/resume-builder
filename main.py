@@ -38,9 +38,9 @@ with st.form("resume_form"):
     experience = []
     for i in range(exp_count):
         st.markdown(f"#### Job {i+1}")
-        role = st.text_input(f"Role (Job {i+1})", key=f"role_{i}")
-        company = st.text_input(f"Company (Job {i+1})", key=f"company_{i}")
-        resp = st.text_area(f"Responsibilities (comma-separated) for Job {i+1}", key=f"resp_{i}")
+        role = st.text_input(f"Role", key=f"role_{i}")
+        company = st.text_input(f"Company", key=f"company_{i}")
+        resp = st.text_area(f"Responsibilities (comma-separated)", key=f"resp_{i}")
         experience.append({
             "role": role,
             "company": company,
@@ -53,10 +53,10 @@ with st.form("resume_form"):
     education = []
     for i in range(edu_count):
         st.markdown(f"#### Education {i+1}")
-        degree = st.text_input(f"Degree (Education {i+1})", key=f"degree_{i}")
-        inst = st.text_input(f"Institution (Education {i+1})", key=f"inst_{i}")
-        year = st.text_input(f"Year (Education {i+1})", key=f"year_{i}")
-        grade = st.text_input(f"Grade/Score (Education {i+1})", key=f"grade_{i}")
+        degree = st.text_input("Degree", key=f"degree_{i}")
+        inst = st.text_input("Institution", key=f"inst_{i}")
+        year = st.text_input("Year", key=f"year_{i}")
+        grade = st.text_input("Grade/Score", key=f"grade_{i}")
         if degree and inst:
             education.append([degree, inst, year, grade])
 
@@ -82,15 +82,14 @@ def create_pdf(data, filename):
     elements = []
 
     # Custom styles
-    title_style = ParagraphStyle("Title", fontSize=20, alignment=1, spaceAfter=8, textColor=colors.HexColor("#003366"), leading=22)
+    title_style = ParagraphStyle("Title", fontSize=20, alignment=1, spaceAfter=8, textColor=colors.HexColor("#003366"))
     section_style = ParagraphStyle("Section", fontSize=14, spaceBefore=12, spaceAfter=6, textColor=colors.HexColor("#003366"))
     normal_style = ParagraphStyle("Normal", fontSize=11, leading=14)
 
     # ---- Header ----
     elements.append(Paragraph(f"<b>{data['name']}</b>", title_style))
     elements.append(Paragraph(f"{data['email']} | {data['phone']}", normal_style))
-    elements.append(Spacer(1, 6))
-    elements.append(Paragraph("<hr width='100%'/>", normal_style))
+    elements.append(Spacer(1, 8))
 
     # ---- Objective ----
     if data.get("objective"):
@@ -108,8 +107,7 @@ def create_pdf(data, filename):
     # ---- Skills ----
     if data.get("skills"):
         elements.append(Paragraph("Skills", section_style))
-        skills_text = " | ".join(data["skills"])
-        elements.append(Paragraph(skills_text, normal_style))
+        elements.append(Paragraph(" | ".join(data["skills"]), normal_style))
         elements.append(Spacer(1, 8))
 
     # ---- Experience ----
@@ -132,7 +130,6 @@ def create_pdf(data, filename):
             ("BACKGROUND", (0,0), (-1,0), colors.HexColor("#003366")),
             ("TEXTCOLOR", (0,0), (-1,0), colors.whitesmoke),
             ("GRID", (0,0), (-1,-1), 0.5, colors.grey),
-            ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
             ("ALIGN", (0,0), (-1,-1), "CENTER"),
             ("FONTSIZE", (0,0), (-1,-1), 10),
         ]))
