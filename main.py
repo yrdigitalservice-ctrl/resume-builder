@@ -18,24 +18,26 @@ st.write("---")
 # -------- FORM ----------
 with st.form("resume_form"):
     st.markdown("### 📌 Basic Information")
-    name = st.text_input("Full Name")
-    email = st.text_input("Email")
-    phone = st.text_input("Phone")
+    name = st.text_input("Full Name", key="name")
+    email = st.text_input("Email", key="email")
+    phone = st.text_input("Phone", key="phone")
 
     st.markdown("### 🎯 Objective (optional)")
-    objective = st.text_area("Write your career objective")
+    objective = st.text_area("Write your career objective", key="objective")
 
     st.markdown("### 📝 Professional Summary (optional)")
-    summary = st.text_area("List key highlights (comma-separated)", placeholder="e.g. 3+ years in IT recruitment, Skilled in stakeholder management")
+    summary = st.text_area("List key highlights (comma-separated)", 
+                           placeholder="e.g. 3+ years in IT recruitment, Skilled in stakeholder management",
+                           key="summary")
 
     st.markdown("### 🧠 Skills (optional)")
-    skills = st.text_area("Enter skills separated by commas", placeholder="Python, SQL, Communication")
+    skills = st.text_area("Enter skills separated by commas", placeholder="Python, SQL, Communication", key="skills")
 
     # ----- EXPERIENCE -----
     st.markdown("### 💼 Experience (optional)")
-    exp_count = st.number_input("How many jobs do you want to add?", min_value=0, max_value=10, value=1)
+    exp_count = st.number_input("How many jobs do you want to add?", min_value=0, max_value=10, value=1, key="exp_count")
     experience = []
-    for i in range(exp_count):
+    for i in range(int(exp_count)):
         st.markdown(f"#### Job {i+1}")
         role = st.text_input(f"Role (Job {i+1})", key=f"role_{i}")
         company = st.text_input(f"Company (Job {i+1})", key=f"company_{i}")
@@ -48,9 +50,9 @@ with st.form("resume_form"):
 
     # ----- EDUCATION -----
     st.markdown("### 🎓 Education (optional)")
-    edu_count = st.number_input("How many education entries?", min_value=0, max_value=10, value=1)
+    edu_count = st.number_input("How many education entries?", min_value=0, max_value=10, value=1, key="edu_count")
     education = []
-    for i in range(edu_count):
+    for i in range(int(edu_count)):
         st.markdown(f"#### Education {i+1}")
         degree = st.text_input(f"Degree (Education {i+1})", key=f"degree_{i}")
         inst = st.text_input(f"Institution (Education {i+1})", key=f"inst_{i}")
@@ -61,10 +63,15 @@ with st.form("resume_form"):
 
     # ----- CERTIFICATES -----
     st.markdown("### 📜 Certificates (optional)")
-    certificates = st.text_area("Enter certificates (comma-separated)", placeholder="Google Data Analytics, AWS Certified Cloud Practitioner")
+    cert_count = st.number_input("How many certificates do you want to add?", min_value=0, max_value=20, value=0, key="cert_count")
+    certificates = []
+    for i in range(int(cert_count)):
+        cert_name = st.text_input(f"Certificate {i+1}", key=f"cert_{i}")
+        if cert_name:
+            certificates.append(cert_name)
 
     st.markdown("### 📎 Upload Certificate Images (optional)")
-    uploaded_certs = st.file_uploader("Upload certificates (JPG/PNG)", type=["png", "jpg", "jpeg"], accept_multiple_files=True)
+    uploaded_certs = st.file_uploader("Upload certificates (JPG/PNG)", type=["png", "jpg", "jpeg"], accept_multiple_files=True, key="uploaded_certs")
 
     submitted = st.form_submit_button("Generate Resume")
 
@@ -157,7 +164,7 @@ if submitted:
         "skills": [s.strip() for s in skills.split(",")] if skills else [],
         "experience": experience,
         "education": education,
-        "certificates": [c.strip() for c in certificates.split(",")] if certificates else [],
+        "certificates": certificates,
         "uploaded_certs": uploaded_certs
     }
 
