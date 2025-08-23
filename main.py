@@ -26,7 +26,8 @@ with st.form("resume_form"):
     objective = st.text_area("Write your career objective")
 
     st.markdown("### 📝 Professional Summary (optional)")
-    summary = st.text_area("List key highlights (comma-separated)", placeholder="e.g. 3+ years in IT recruitment, Skilled in stakeholder management")
+    summary = st.text_area("List key highlights (comma-separated)",
+                           placeholder="e.g. 3+ years in IT recruitment, Skilled in stakeholder management")
 
     st.markdown("### 🧠 Skills (optional)")
     skills = st.text_area("Enter skills separated by commas", placeholder="Python, SQL, Communication")
@@ -37,9 +38,9 @@ with st.form("resume_form"):
     experience = []
     for i in range(exp_count):
         st.markdown(f"#### Job {i+1}")
-        role = st.text_input(f"Role (Job {i+1})")
-        company = st.text_input(f"Company (Job {i+1})")
-        resp = st.text_area(f"Responsibilities (comma-separated) for Job {i+1}")
+        role = st.text_input(f"Role (Job {i+1})", key=f"role_{i}")
+        company = st.text_input(f"Company (Job {i+1})", key=f"company_{i}")
+        resp = st.text_area(f"Responsibilities (comma-separated) for Job {i+1}", key=f"resp_{i}")
         experience.append({
             "role": role,
             "company": company,
@@ -52,19 +53,21 @@ with st.form("resume_form"):
     education = []
     for i in range(edu_count):
         st.markdown(f"#### Education {i+1}")
-        degree = st.text_input(f"Degree (Education {i+1})")
-        inst = st.text_input(f"Institution (Education {i+1})")
-        year = st.text_input(f"Year (Education {i+1})")
-        grade = st.text_input(f"Grade/Score (Education {i+1})")
+        degree = st.text_input(f"Degree (Education {i+1})", key=f"degree_{i}")
+        inst = st.text_input(f"Institution (Education {i+1})", key=f"inst_{i}")
+        year = st.text_input(f"Year (Education {i+1})", key=f"year_{i}")
+        grade = st.text_input(f"Grade/Score (Education {i+1})", key=f"grade_{i}")
         if degree and inst:
             education.append([degree, inst, year, grade])
 
     # ----- CERTIFICATES -----
     st.markdown("### 📜 Certificates (optional)")
-    certificates = st.text_area("Enter certificates (comma-separated)", placeholder="Google Data Analytics, AWS Certified Cloud Practitioner")
+    certificates = st.text_area("Enter certificates (comma-separated)",
+                                placeholder="Google Data Analytics, AWS Certified Cloud Practitioner")
 
     st.markdown("### 📎 Upload Certificate Images (optional)")
-    uploaded_certs = st.file_uploader("Upload certificates (JPG/PNG)", type=["png", "jpg", "jpeg"], accept_multiple_files=True)
+    uploaded_certs = st.file_uploader("Upload certificates (JPG/PNG)",
+                                      type=["png", "jpg", "jpeg"], accept_multiple_files=True)
 
     submitted = st.form_submit_button("Generate Resume")
 
