@@ -18,26 +18,25 @@ st.write("---")
 # -------- FORM ----------
 with st.form("resume_form"):
     st.markdown("### 📌 Basic Information")
-    name = st.text_input("Full Name", key="name")
-    email = st.text_input("Email", key="email")
-    phone = st.text_input("Phone", key="phone")
+    name = st.text_input("Full Name")
+    email = st.text_input("Email")
+    phone = st.text_input("Phone")
 
     st.markdown("### 🎯 Objective (optional)")
-    objective = st.text_area("Write your career objective", key="objective")
+    objective = st.text_area("Write your career objective")
 
     st.markdown("### 📝 Professional Summary (optional)")
-    summary = st.text_area("List key highlights (comma-separated)", 
-                           placeholder="e.g. 3+ years in IT recruitment, Skilled in stakeholder management",
-                           key="summary")
+    summary = st.text_area("List key highlights (comma-separated)",
+                           placeholder="e.g. 3+ years in IT recruitment, Skilled in stakeholder management")
 
     st.markdown("### 🧠 Skills (optional)")
-    skills = st.text_area("Enter skills separated by commas", placeholder="Python, SQL, Communication", key="skills")
+    skills = st.text_area("Enter skills separated by commas", placeholder="Python, SQL, Communication")
 
     # ----- EXPERIENCE -----
     st.markdown("### 💼 Experience (optional)")
-    exp_count = st.number_input("How many jobs do you want to add?", min_value=0, max_value=10, value=1, key="exp_count")
+    exp_count = st.number_input("How many jobs do you want to add?", min_value=0, max_value=10, value=1)
     experience = []
-    for i in range(int(exp_count)):
+    for i in range(exp_count):
         st.markdown(f"#### Job {i+1}")
         role = st.text_input(f"Role (Job {i+1})", key=f"role_{i}")
         company = st.text_input(f"Company (Job {i+1})", key=f"company_{i}")
@@ -50,9 +49,9 @@ with st.form("resume_form"):
 
     # ----- EDUCATION -----
     st.markdown("### 🎓 Education (optional)")
-    edu_count = st.number_input("How many education entries?", min_value=0, max_value=10, value=1, key="edu_count")
+    edu_count = st.number_input("How many education entries?", min_value=0, max_value=10, value=1)
     education = []
-    for i in range(int(edu_count)):
+    for i in range(edu_count):
         st.markdown(f"#### Education {i+1}")
         degree = st.text_input(f"Degree (Education {i+1})", key=f"degree_{i}")
         inst = st.text_input(f"Institution (Education {i+1})", key=f"inst_{i}")
@@ -63,92 +62,100 @@ with st.form("resume_form"):
 
     # ----- CERTIFICATES -----
     st.markdown("### 📜 Certificates (optional)")
-    cert_count = st.number_input("How many certificates do you want to add?", min_value=0, max_value=20, value=0, key="cert_count")
+    cert_count = st.number_input("How many certificates do you want to add?", min_value=0, max_value=10, value=0)
     certificates = []
-    for i in range(int(cert_count)):
-        cert_name = st.text_input(f"Certificate {i+1}", key=f"cert_{i}")
-        if cert_name:
-            certificates.append(cert_name)
+    for i in range(cert_count):
+        cert = st.text_input(f"Certificate {i+1}", key=f"cert_{i}")
+        if cert:
+            certificates.append(cert)
 
     st.markdown("### 📎 Upload Certificate Images (optional)")
-    uploaded_certs = st.file_uploader("Upload certificates (JPG/PNG)", type=["png", "jpg", "jpeg"], accept_multiple_files=True, key="uploaded_certs")
+    uploaded_certs = st.file_uploader("Upload certificates (JPG/PNG)", type=["png", "jpg", "jpeg"], accept_multiple_files=True)
 
     submitted = st.form_submit_button("Generate Resume")
 
 
 # -------- PDF CREATION FUNCTION ----------
 def create_pdf(data, filename):
-    doc = SimpleDocTemplate(filename, pagesize=A4)
+    doc = SimpleDocTemplate(filename, pagesize=A4, leftMargin=40, rightMargin=40, topMargin=40, bottomMargin=40)
     styles = getSampleStyleSheet()
     elements = []
 
-    # Header
-    header_style = ParagraphStyle("Header", fontSize=18, alignment=1, spaceAfter=12, textColor=colors.HexColor("#FF4B4B"))
-    elements.append(Paragraph(f"<b>{data['name']}</b>", header_style))
-    contact_style = ParagraphStyle("Contact", fontSize=10, alignment=1, spaceAfter=20)
-    elements.append(Paragraph(f"{data['email']} | {data['phone']}", contact_style))
+    # Custom styles
+    title_style = ParagraphStyle("Title", fontSize=20, alignment=1, spaceAfter=8, textColor=colors.HexColor("#003366"), leading=22)
+    section_style = ParagraphStyle("Section", fontSize=14, spaceBefore=12, spaceAfter=6, textColor=colors.HexColor("#003366"))
+    normal_style = ParagraphStyle("Normal", fontSize=11, leading=14)
 
-    # Objective
+    # ---- Header ----
+    elements.append(Paragraph(f"<b>{data['name']}</b>", title_style))
+    elements.append(Paragraph(f"{data['email']} | {data['phone']}", normal_style))
+    elements.append(Spacer(1, 6))
+    elements.append(Paragraph("<hr width='100%'/>", normal_style))
+
+    # ---- Objective ----
     if data.get("objective"):
-        elements.append(Paragraph("<b>Objective</b>", styles["Heading3"]))
-        elements.append(Paragraph(data["objective"], styles["Normal"]))
-        elements.append(Spacer(1, 12))
+        elements.append(Paragraph("Objective", section_style))
+        elements.append(Paragraph(data["objective"], normal_style))
+        elements.append(Spacer(1, 8))
 
-    # Professional Summary
+    # ---- Professional Summary ----
     if data.get("summary"):
-        elements.append(Paragraph("<b>Professional Summary</b>", styles["Heading3"]))
+        elements.append(Paragraph("Professional Summary", section_style))
         for line in data["summary"]:
-            elements.append(Paragraph(f"• {line}", styles["Normal"]))
-        elements.append(Spacer(1, 12))
+            elements.append(Paragraph(f"• {line}", normal_style))
+        elements.append(Spacer(1, 8))
 
-    # Skills
+    # ---- Skills ----
     if data.get("skills"):
-        elements.append(Paragraph("<b>Skills</b>", styles["Heading3"]))
-        elements.append(Paragraph(", ".join(data["skills"]), styles["Normal"]))
-        elements.append(Spacer(1, 12))
+        elements.append(Paragraph("Skills", section_style))
+        skills_text = " | ".join(data["skills"])
+        elements.append(Paragraph(skills_text, normal_style))
+        elements.append(Spacer(1, 8))
 
-    # Experience
+    # ---- Experience ----
     if data.get("experience"):
-        elements.append(Paragraph("<b>Experience</b>", styles["Heading3"]))
+        elements.append(Paragraph("Experience", section_style))
         for job in data["experience"]:
             if job["role"] and job["company"]:
-                elements.append(Paragraph(f"<b>{job['role']} – {job['company']}</b>", styles["Normal"]))
+                elements.append(Paragraph(f"<b>{job['role']}</b> – {job['company']}", normal_style))
                 for resp in job["responsibilities"]:
-                    elements.append(Paragraph(f"• {resp}", styles["Normal"]))
-                elements.append(Spacer(1, 8))
-        elements.append(Spacer(1, 12))
+                    elements.append(Paragraph(f"• {resp}", normal_style))
+                elements.append(Spacer(1, 6))
+        elements.append(Spacer(1, 8))
 
-    # Education
+    # ---- Education ----
     if data.get("education"):
-        elements.append(Paragraph("<b>Education</b>", styles["Heading3"]))
+        elements.append(Paragraph("Education", section_style))
         edu_data = [["Degree", "Institution", "Year", "Grade"]] + data["education"]
         table = Table(edu_data, hAlign="LEFT", colWidths=[120, 200, 60, 60])
         table.setStyle(TableStyle([
-            ("BACKGROUND", (0,0), (-1,0), colors.grey),
+            ("BACKGROUND", (0,0), (-1,0), colors.HexColor("#003366")),
             ("TEXTCOLOR", (0,0), (-1,0), colors.whitesmoke),
-            ("GRID", (0,0), (-1,-1), 0.5, colors.black),
-            ("ALIGN", (0,0), (-1,-1), "CENTER")
+            ("GRID", (0,0), (-1,-1), 0.5, colors.grey),
+            ("FONTNAME", (0,0), (-1,0), "Helvetica-Bold"),
+            ("ALIGN", (0,0), (-1,-1), "CENTER"),
+            ("FONTSIZE", (0,0), (-1,-1), 10),
         ]))
         elements.append(table)
-        elements.append(Spacer(1, 12))
+        elements.append(Spacer(1, 8))
 
-    # Certificates (Text List)
+    # ---- Certificates ----
     if data.get("certificates"):
-        elements.append(Paragraph("<b>Certificates</b>", styles["Heading3"]))
+        elements.append(Paragraph("Certificates", section_style))
         for cert in data["certificates"]:
-            elements.append(Paragraph(f"• {cert}", styles["Normal"]))
-        elements.append(Spacer(1, 12))
+            elements.append(Paragraph(f"• {cert}", normal_style))
+        elements.append(Spacer(1, 8))
 
-    # Certificates (Images)
+    # ---- Certificate Images ----
     if data.get("uploaded_certs"):
-        elements.append(Paragraph("<b>Certificates (Images)</b>", styles["Heading3"]))
+        elements.append(Paragraph("Certificate Images", section_style))
         for cert_file in data["uploaded_certs"]:
             try:
-                img = Image(cert_file, width=400, height=300)
+                img = Image(cert_file, width=350, height=250)
                 elements.append(img)
-                elements.append(Spacer(1, 12))
+                elements.append(Spacer(1, 10))
             except Exception as e:
-                elements.append(Paragraph(f"(Could not load image: {e})", styles["Normal"]))
+                elements.append(Paragraph(f"(Could not load image: {e})", normal_style))
 
     doc.build(elements)
 
