@@ -1,5 +1,5 @@
 import streamlit as st
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
@@ -15,7 +15,7 @@ st.markdown(
 )
 st.write("---")
 
-# Form to collect user input
+# -------- FORM ----------
 with st.form("resume_form"):
     st.markdown("### 📌 Basic Information")
     name = st.text_input("Full Name")
@@ -26,13 +26,14 @@ with st.form("resume_form"):
     objective = st.text_area("Write your career objective")
 
     st.markdown("### 📝 Professional Summary (optional)")
-    summary = st.text_area("List key highlights (separate with commas)", placeholder="e.g. 3+ years in IT recruitment, Skilled in stakeholder management")
+    summary = st.text_area("List key highlights (comma-separated)", placeholder="e.g. 3+ years in IT recruitment, Skilled in stakeholder management")
 
     st.markdown("### 🧠 Skills (optional)")
     skills = st.text_area("Enter skills separated by commas", placeholder="Python, SQL, Communication")
 
+    # ----- EXPERIENCE -----
     st.markdown("### 💼 Experience (optional)")
-    exp_count = st.number_input("How many jobs do you want to add?", min_value=0, max_value=5, value=1)
+    exp_count = st.number_input("How many jobs do you want to add?", min_value=0, max_value=10, value=1)
     experience = []
     for i in range(exp_count):
         st.markdown(f"#### Job {i+1}")
@@ -45,8 +46,9 @@ with st.form("resume_form"):
             "responsibilities": [r.strip() for r in resp.split(",")] if resp else []
         })
 
+    # ----- EDUCATION -----
     st.markdown("### 🎓 Education (optional)")
-    edu_count = st.number_input("How many education entries?", min_value=0, max_value=5, value=1)
+    edu_count = st.number_input("How many education entries?", min_value=0, max_value=10, value=1)
     education = []
     for i in range(edu_count):
         st.markdown(f"#### Education {i+1}")
@@ -57,12 +59,17 @@ with st.form("resume_form"):
         if degree and inst:
             education.append([degree, inst, year, grade])
 
+    # ----- CERTIFICATES -----
     st.markdown("### 📜 Certificates (optional)")
     certificates = st.text_area("Enter certificates (comma-separated)", placeholder="Google Data Analytics, AWS Certified Cloud Practitioner")
 
+    st.markdown("### 📎 Upload Certificate Images (optional)")
+    uploaded_certs = st.file_uploader("Upload certificates (JPG/PNG)", type=["png", "jpg", "jpeg"], accept_multiple_files=True)
+
     submitted = st.form_submit_button("Generate Resume")
 
-# Function to create PDF
+
+# -------- PDF CREATION FUNCTION ----------
 def create_pdf(data, filename):
     doc = SimpleDocTemplate(filename, pagesize=A4)
     styles = getSampleStyleSheet()
@@ -118,16 +125,28 @@ def create_pdf(data, filename):
         elements.append(table)
         elements.append(Spacer(1, 12))
 
-    # Certificates
+    # Certificates (Text List)
     if data.get("certificates"):
         elements.append(Paragraph("<b>Certificates</b>", styles["Heading3"]))
         for cert in data["certificates"]:
             elements.append(Paragraph(f"• {cert}", styles["Normal"]))
         elements.append(Spacer(1, 12))
 
+    # Certificates (Images)
+    if data.get("uploaded_certs"):
+        elements.append(Paragraph("<b>Certificates (Images)</b>", styles["Heading3"]))
+        for cert_file in data["uploaded_certs"]:
+            try:
+                img = Image(cert_file, width=400, height=300)
+                elements.append(img)
+                elements.append(Spacer(1, 12))
+            except Exception as e:
+                elements.append(Paragraph(f"(Could not load image: {e})", styles["Normal"]))
+
     doc.build(elements)
 
-# Generate PDF
+
+# -------- GENERATE PDF --------
 if submitted:
     resume_data = {
         "name": name,
@@ -138,7 +157,8 @@ if submitted:
         "skills": [s.strip() for s in skills.split(",")] if skills else [],
         "experience": experience,
         "education": education,
-        "certificates": [c.strip() for c in certificates.split(",")] if certificates else []
+        "certificates": [c.strip() for c in certificates.split(",")] if certificates else [],
+        "uploaded_certs": uploaded_certs
     }
 
     filename = f"{name.replace(' ', '_')}_Resume.pdf"
