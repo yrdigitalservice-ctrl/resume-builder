@@ -1,8 +1,8 @@
 import streamlit as st
-from reportlab.lib.pagesizes import A4
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4
 from io import BytesIO
 
 st.set_page_config(page_title="Resume Builder", layout="centered")
@@ -24,25 +24,11 @@ with st.form("resume_form"):
     email = st.text_input("Email", key="email")
     phone = st.text_input("Phone", key="phone")
     address = st.text_input("Address (optional)", key="address")
-    summary = st.text_area("Professional Headline / Summary (1–3 lines)", key="summary")
+    summary = st.text_area("Professional Summary (1–3 lines)", key="summary")
 
     st.write("---")
     st.markdown("### 🧠 Skills (optional)")
     skills = st.text_area("Add skills (comma separated)", key="skills")
-
-    # ---- Education ----
-    st.write("---")
-    st.markdown("### 🎓 Education (optional)")
-    edu_count = st.number_input("How many education entries?", min_value=0, max_value=10, value=1)
-    education = []
-    for i in range(edu_count):
-        st.markdown(f"#### Education {i+1}")
-        degree = st.text_input("Degree", key=f"degree_{i}")
-        institution = st.text_input("Institution", key=f"inst_{i}")
-        year = st.text_input("Year", key=f"year_{i}")
-        grade = st.text_input("Grade/Score", key=f"grade_{i}")
-        if degree and institution:
-            education.append([degree, institution, year, grade])
 
     # ---- Experience ----
     st.write("---")
@@ -54,9 +40,23 @@ with st.form("resume_form"):
         job = st.text_input("Job Title", key=f"job_{i}")
         company = st.text_input("Company", key=f"company_{i}")
         years = st.text_input("Years", key=f"years_{i}")
-        desc = st.text_area("Description", key=f"desc_{i}")
+        desc = st.text_area("Description / Responsibilities", key=f"desc_{i}")
         if job and company:
             experience.append([job, company, years, desc])
+
+    # ---- Education ----
+    st.write("---")
+    st.markdown("### 🎓 Education (optional)")
+    edu_count = st.number_input("How many education entries?", min_value=0, max_value=10, value=1)
+    education = []
+    for i in range(edu_count):
+        st.markdown(f"#### Education {i+1}")
+        degree = st.text_input("Degree", key=f"degree_{i}")
+        inst = st.text_input("Institution", key=f"inst_{i}")
+        year = st.text_input("Year", key=f"year_{i}")
+        grade = st.text_input("Grade/Score", key=f"grade_{i}")
+        if degree and inst:
+            education.append([degree, inst, year, grade])
 
     # ---- Certificates ----
     st.write("---")
@@ -67,6 +67,9 @@ with st.form("resume_form"):
         cert = st.text_input(f"Certificate {i+1}", key=f"cert_{i}")
         if cert:
             certificates.append(cert)
+
+    st.markdown("### 📎 Upload Certificate Images (optional)")
+    uploaded_certs = st.file_uploader("Upload certificate images (JPG/PNG)", type=["png", "jpg", "jpeg"], accept_multiple_files=True)
 
     submitted = st.form_submit_button("📄 Generate Resume")
 
@@ -125,6 +128,16 @@ def create_pdf(data):
             story.append(Paragraph(f"• {cert}", normal_style))
         story.append(Spacer(1, 8))
 
+    if data.get("uploaded_certs"):
+        story.append(Paragraph("Certificates (Images)", section_style))
+        for cert_file in data["uploaded_certs"]:
+            try:
+                img = Image(cert_file, width=400, height=300)
+                story.append(img)
+                story.append(Spacer(1, 12))
+            except Exception as e:
+                story.append(Paragraph(f"(Could not load image: {e})", normal_style))
+
     doc.build(story)
     buffer.seek(0)
     return buffer
@@ -140,7 +153,8 @@ if submitted:
         "skills": skills,
         "experience": experience,
         "education": education,
-        "certificates": certificates
+        "certificates": certificates,
+        "uploaded_certs": uploaded_certs
     }
     pdf_buffer = create_pdf(resume_data)
     st.download_button("⬇️ Download Your Resume", pdf_buffer, file_name=f"{name.replace(' ', '_')}_Resume.pdf", mime="application/pdf")
